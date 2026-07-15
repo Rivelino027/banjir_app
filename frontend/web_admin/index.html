@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiPeBanjir - Admin Monitoring & Kontrol</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<div id="app" class="h-screen" v-cloak>
+    
+    <!-- ==================== VIEW: LOGIN SCREEN ==================== -->
+    <div v-if="!isLoggedIn" class="relative min-h-screen flex items-center justify-center bg-[#070e1b] overflow-hidden p-6">
+        <!-- Floating Ambient Glows -->
+        <div class="absolute w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-[120px] -top-48 -left-48 animate-pulse" style="animation-duration: 8s;"></div>
+        <div class="absolute w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[120px] -bottom-48 -right-48 animate-pulse" style="animation-duration: 12s;"></div>
+        <div class="absolute w-[300px] h-[300px] rounded-full bg-cyan-500/5 blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+        
+        <!-- Tech Grid Overlay -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30"></div>
+
+        <!-- Glassmorphism Card -->
+        <div class="relative bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_-12px_rgba(30,144,255,0.15)] space-y-6 z-10 transition-all duration-300 hover:shadow-[0_0_50px_-6px_rgba(30,144,255,0.25)]">
+            <!-- Brand Head -->
+            <div class="text-center space-y-3">
+                <div class="w-16 h-16 bg-gradient-to-tr from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 hover:scale-110 hover:rotate-6">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent tracking-wide">SiPeBanjir Admin</h2>
+                <p class="text-xs text-slate-400 leading-relaxed">Silakan masuk untuk mengelola sistem monitoring banjir</p>
+            </div>
+
+            <!-- Login Form -->
+            <form @submit.prevent="handleLogin" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="block text-slate-400 font-semibold text-xs uppercase tracking-wider">Alamat Email</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="email" v-model="loginForm.email" required 
+                               class="w-full bg-slate-950/40 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/15 transition-all duration-200" 
+                               placeholder="nama@email.com">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-slate-400 font-semibold text-xs uppercase tracking-wider">Kata Sandi</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="password" v-model="loginForm.password" required 
+                               class="w-full bg-slate-950/40 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/15 transition-all duration-200" 
+                               placeholder="••••••••">
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="loginError" class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-200 text-xs font-medium flex items-center gap-3">
+                    <i class="fa-solid fa-circle-exclamation text-sm text-rose-400"></i>
+                    <span>{{ loginError }}</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" :disabled="loginLoading"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-blue-800 disabled:to-indigo-800 text-white font-bold py-4 rounded-2xl transition duration-300 shadow-[0_4px_25px_rgba(37,99,235,0.25)] hover:shadow-[0_4px_30px_rgba(37,99,235,0.45)] active:scale-[0.98] text-sm flex items-center justify-center gap-2">
+                    <span v-if="loginLoading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>{{ loginLoading ? 'Memverifikasi...' : 'Masuk Panel Admin' }}</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== VIEW: MAIN PANEL (LOGGED IN) ==================== -->
+    <div v-else class="flex h-screen overflow-hidden">
+        
+        <!-- ==================== SIDEBAR ==================== -->
+        <div class="w-72 bg-[#0D47A1] text-white flex flex-col justify-between shadow-xl z-20">
+            <div>
+                <!-- Header Brand -->
+                <div class="p-6 border-b border-blue-800/60">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-white/10 rounded-xl">
+                            <i class="fa-solid fa-droplet text-2xl text-blue-200"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold tracking-wide">SiPeBanjir</h2>
+                            <p class="text-xs text-blue-200/80">Monitoring & Kontrol</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mt-6 px-4 space-y-1.5">
+                    <button @click="changeTab('dashboard')" 
+                            :class="currentTab === 'dashboard' ? 'bg-blue-700/60 text-white font-semibold' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'" 
+                            class="w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl text-left transition duration-200 text-sm">
+                        <i class="fa-solid fa-chart-pie text-lg w-6"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    
+                    <button @click="changeTab('titik')" 
+                            :class="currentTab === 'titik' ? 'bg-blue-700/60 text-white font-semibold' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'" 
+                            class="w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl text-left transition duration-200 text-sm">
+                        <i class="fa-solid fa-map-location-dot text-lg w-6"></i>
+                        <span>Titik Rawan</span>
+                    </button>
+                    
+                    <button @click="changeTab('pengaturan')" 
+                            :class="currentTab === 'pengaturan' ? 'bg-blue-700/60 text-white font-semibold' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'" 
+                            class="w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl text-left transition duration-200 text-sm">
+                        <i class="fa-solid fa-sliders text-lg w-6"></i>
+                        <span>Pengaturan Sistem</span>
+                    </button>
+                    
+                    <button @click="changeTab('laporan')" 
+                            :class="currentTab === 'laporan' ? 'bg-blue-700/60 text-white font-semibold' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'" 
+                            class="w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl text-left transition duration-200 text-sm">
+                        <i class="fa-solid fa-chart-line text-lg w-6"></i>
+                        <span>Laporan & Analitik</span>
+                    </button>
+                    
+                    <button @click="changeTab('pengguna')" 
+                            :class="currentTab === 'pengguna' ? 'bg-blue-700/60 text-white font-semibold' : 'text-blue-100 hover:bg-blue-800/50 hover:text-white'" 
+                            class="w-full flex items-center gap-3.5 px-4.5 py-3.5 rounded-xl text-left transition duration-200 text-sm">
+                        <i class="fa-solid fa-users text-lg w-6"></i>
+                        <span>Manajemen Pengguna</span>
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Bottom Profile -->
+            <div class="p-4 border-t border-blue-800/60 bg-blue-950/40 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 border border-blue-400 flex items-center justify-center font-bold text-lg">
+                        A
+                    </div>
+                    <div class="text-xs">
+                        <p class="font-bold text-slate-100">{{ activeUser.nama_lengkap }}</p>
+                        <p class="text-blue-300 text-[10px]">{{ activeUser.email }}</p>
+                    </div>
+                </div>
+                <button @click="handleLogout" class="text-rose-300 hover:text-rose-200 p-2 rounded-lg hover:bg-white/5 transition" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400 text-sm">Panel Kontrol</span>
+                    <span class="text-slate-300">/</span>
+                    <h1 class="text-lg font-semibold text-slate-800 capitalize">{{ currentTab.replace('-', ' ') }}</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex h-2.5 w-2.5 relative">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-emerald-200">Server Status: Aktif</span>
+                </div>
+            </header>
+
+            <!-- Main Body -->
+            <main class="p-8 flex-1">
+                
+                <!-- ==================== TAB: DASHBOARD ==================== -->
+                <div v-if="currentTab === 'dashboard'" class="space-y-8 animate-[fadeIn_0.3s_ease-out]">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">Total Titik Rawan</p>
+                                <h3 class="text-3xl font-extrabold text-slate-800 mt-2">{{ stats.total_titik }}</h3>
+                            </div>
+                            <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl">
+                                <i class="fa-solid fa-map-pin text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">Peringatan Aktif</p>
+                                <h3 class="text-3xl font-extrabold text-amber-600 mt-2">7</h3>
+                            </div>
+                            <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl">
+                                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">Prediksi Hari Ini</p>
+                                <h3 class="text-3xl font-extrabold text-indigo-600 mt-2">{{ stats.total_analisis }}</h3>
+                            </div>
+                            <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                <i class="fa-solid fa-calculator text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-slate-500 font-medium">Pengguna Aktif</p>
+                                <h3 class="text-3xl font-extrabold text-emerald-600 mt-2">{{ stats.total_user }}</h3>
+                            </div>
+                            <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
+                                <i class="fa-solid fa-user-check text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 md:col-span-2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-slate-800 text-base">Tren Grafik Mingguan Peringatan Dini</h4>
+                                <span class="text-xs text-slate-400">7 Hari Terakhir</span>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="weeklyChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                            <h4 class="font-bold text-slate-800 text-base mb-4">Distribusi Tingkat Risiko</h4>
+                            <div class="h-64 relative flex items-center justify-center">
+                                <canvas id="riskDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table & Widget Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Recent Warnings -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:col-span-2 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-slate-800 text-base">Peringatan K-NN Terbaru Masuk</h4>
+                                <button @click="changeTab('laporan')" class="text-xs font-semibold text-blue-600 hover:underline">Lihat Semua</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead>
+                                        <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                                            <th class="pb-3.5 font-medium">Waktu</th>
+                                            <th class="pb-3.5 font-medium">Email User</th>
+                                            <th class="pb-3.5 font-medium">Curah Hujan</th>
+                                            <th class="pb-3.5 font-medium">Durasi</th>
+                                            <th class="pb-3.5 font-medium">Status Risiko</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr v-for="row in riwayatTerbaru" :key="row.id_prediksi" class="hover:bg-slate-50/50">
+                                            <td class="py-3.5 text-slate-500 text-xs">{{ row.waktu_prediksi }}</td>
+                                            <td class="py-3.5 font-medium text-slate-700">{{ row.email }}</td>
+                                            <td class="py-3.5 text-slate-600">{{ row.curah_hujan }} mm</td>
+                                            <td class="py-3.5 text-slate-600">{{ row.durasi_jam }} jam</td>
+                                            <td class="py-3.5">
+                                                <span :style="{ backgroundColor: row.kode_warna }" class="text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                                                    {{ row.nama_status }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="riwayatTerbaru.length === 0">
+                                            <td colspan="5" class="py-8 text-center text-slate-400">Tidak ada riwayat peringatan masuk.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- System Status Widget -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4 flex flex-col justify-between">
+                            <h4 class="font-bold text-slate-800 text-base">Status Sistem</h4>
+                            <div class="space-y-3.5">
+                                <div class="flex items-center justify-between p-3.5 bg-emerald-50 rounded-xl border border-emerald-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-server text-emerald-600 text-lg"></i>
+                                        <div>
+                                            <p class="text-xs text-slate-500">Status Server</p>
+                                            <p class="text-sm font-bold text-emerald-800">Uptime: 99.9%</p>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3.5 bg-indigo-50 rounded-xl border border-indigo-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-brain text-indigo-600 text-lg"></i>
+                                        <div>
+                                            <p class="text-xs text-slate-500">Model K-NN</p>
+                                            <p class="text-sm font-bold text-indigo-800">Akurasi: 78,86%</p>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-indigo-500"></i>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3.5 bg-blue-50 rounded-xl border border-blue-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-database text-blue-600 text-lg"></i>
+                                        <div>
+                                            <p class="text-xs text-slate-500">Database</p>
+                                            <p class="text-sm font-bold text-blue-800">12,8 MB (1.200 Data Latih)</p>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-blue-500"></i>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3.5 bg-rose-50 rounded-xl border border-rose-100">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-clock-rotate-left text-rose-600 text-lg"></i>
+                                        <div>
+                                            <p class="text-xs text-slate-500">Backup Terakhir</p>
+                                            <p class="text-sm font-bold text-rose-800">Otomatis (Harian)</p>
+                                        </div>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-rose-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: TITIK RAWAN ==================== -->
+                <div v-if="currentTab === 'titik'" class="space-y-6 animate-[fadeIn_0.3s_ease-out]">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Daftar Titik Latih K-NN Berdasarkan Geografis</h3>
+                            <p class="text-xs text-slate-400 mt-1">Daftar titik lokasi yang digunakan sebagai basis data latihan algoritma K-NN.</p>
+                        </div>
+                        <button @click="openAddTitikModal" class="bg-[#0D47A1] hover:bg-blue-800 text-white font-bold px-5 py-3 rounded-xl transition duration-200 flex items-center gap-2 text-sm shadow-md">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Tambah Titik Baru</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Search & Filters -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <div class="w-full md:w-80 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" v-model="searchQuery" placeholder="Cari wilayah/jalan..." class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="w-full md:w-48 flex items-center gap-2">
+                            <span class="text-xs font-semibold text-slate-500 whitespace-nowrap">Filter Status:</span>
+                            <select v-model="statusFilter" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none">
+                                <option value="Semua">Semua</option>
+                                <option value="Sangat Tinggi">Sangat Tinggi</option>
+                                <option value="Tinggi">Tinggi</option>
+                                <option value="Sedang">Sedang</option>
+                                <option value="Rendah">Rendah</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grid Location Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div v-for="item in filteredTitik" :key="item.id_data" 
+                             :class="getCardBorderClass(item.nama_status)"
+                             class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-y border-r border-slate-200 space-y-4 hover:shadow-md transition duration-200 flex flex-col justify-between">
+                            
+                            <div class="space-y-3.5">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                            <i class="fa-solid fa-location-dot" :class="getTextColorClass(item.nama_status)"></i>
+                                            <span>{{ item.wilayah }}</span>
+                                        </h4>
+                                        <p class="text-[10px] text-slate-400 mt-1">Sumber: {{ item.sumber }}</p>
+                                    </div>
+                                    <span :style="{ backgroundColor: item.kode_warna }" class="text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        {{ item.nama_status }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Parameters display -->
+                                <div class="grid grid-cols-3 gap-2 py-3 bg-slate-50/80 rounded-xl px-4 text-xs">
+                                    <div>
+                                        <p class="text-slate-400 text-[10px]">💧 Hujan</p>
+                                        <p class="font-bold text-slate-700 mt-0.5">{{ item.curah_hujan }} mm</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-400 text-[10px]">⏳ Durasi</p>
+                                        <p class="font-bold text-slate-700 mt-0.5">{{ item.durasi_jam }} jam</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-400 text-[10px]">📉 Risiko</p>
+                                        <p class="font-bold text-slate-700 mt-0.5">{{ item.risiko_pct }}%</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Coords info -->
+                                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                                    <i class="fa-solid fa-compass"></i>
+                                    <span>{{ item.latitude }}, {{ item.longitude }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Action buttons -->
+                            <div class="flex justify-end gap-3.5 border-t border-slate-100 pt-3.5 mt-2 text-xs font-semibold">
+                                <button @click="openEditTitikModal(item)" class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Ubah</span>
+                                </button>
+                                <button @click="deleteDataLatih(item.id_data)" class="text-rose-600 hover:text-rose-800 flex items-center gap-1">
+                                    <i class="fa-solid fa-trash"></i>
+                                    <span>Hapus</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: PENGATURAN SYSTEM ==================== -->
+                <div v-if="currentTab === 'pengaturan'" class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-[fadeIn_0.3s_ease-out]">
+                    <!-- Left Configuration panel -->
+                    <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-8">
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <h3 class="text-lg font-bold text-slate-800">🎛️ Konfigurasi Tuning Nilai K & Threshold</h3>
+                            <button @click="saveParameterConfig" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition duration-200 text-xs shadow-md">
+                                Simpan Pengaturan
+                            </button>
+                        </div>
+                        
+                        <!-- Nilai Ktetangga -->
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-sm font-semibold text-slate-600">Nilai K Tetangga Terdekat</label>
+                                <span class="bg-blue-50 text-blue-600 font-extrabold text-lg px-4 py-1.5 rounded-xl border border-blue-100">K = {{ config.nilai_k }}</span>
+                            </div>
+                            <input type="range" min="1" max="15" step="2" v-model="config.nilai_k" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            <p class="text-xs text-slate-400">Disarankan bernilai ganjil (3, 5, 7) untuk menghindari voting seimbang pada klasifikasi.</p>
+                        </div>
+
+                        <!-- Risk thresholds settings -->
+                        <div class="border-t pt-6 space-y-4">
+                            <h4 class="text-sm font-semibold text-slate-600">Batas Batas Threshold Risiko (%)</h4>
+                            <div class="grid grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Threshold Rendah</label>
+                                    <input type="number" v-model="config.threshold_rendah" class="w-full border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Threshold Sedang</label>
+                                    <input type="number" v-model="config.threshold_sedang" class="w-full border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Threshold Tinggi</label>
+                                    <input type="number" v-model="config.threshold_tinggi" class="w-full border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Push Notification Section -->
+                        <div class="border-t pt-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-700">Push Notification Alert</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Kirim notifikasi langsung ke smartphone pengguna terdaftar.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" v-model="pushNotificationEnabled" class="sr-only peer">
+                                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-xs text-blue-800">
+                                <i class="fa-solid fa-bell-circle-exclamation text-lg"></i>
+                                <span>Notifikasi akan dikirim secara otomatis jika hasil deteksi curah hujan mencapai level <b>Tinggi</b> atau <b>Sangat Tinggi</b>.</span>
+                            </div>
+                        </div>
+
+                        <!-- Database & Backup Section -->
+                        <div class="border-t pt-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-700">Database & Backup Data</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Kelola data pencadangan database demi keamanan sistem.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" v-model="autoBackupEnabled" class="sr-only peer">
+                                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-xs pt-2">
+                                <div class="p-4 border rounded-xl bg-slate-50">
+                                    <span class="text-slate-400 block mb-1">Penyimpanan Terpakai</span>
+                                    <span class="text-lg font-bold text-slate-700">28.5 GB</span>
+                                </div>
+                                <div class="p-4 border rounded-xl bg-slate-50">
+                                    <span class="text-slate-400 block mb-1">Kapasitas Tersisa</span>
+                                    <span class="text-lg font-bold text-slate-700">71.5 GB</span>
+                                </div>
+                            </div>
+                            <button @click="triggerBackup" class="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3.5 rounded-xl transition duration-200 text-xs">
+                                <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Backup Database Sekarang
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Information panel -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-6 self-start">
+                        <h4 class="font-bold text-slate-800 text-base flex items-center gap-2 pb-3 border-b">
+                            <i class="fa-solid fa-shield-halved text-blue-600"></i>
+                            <span>Keamanan Sistem</span>
+                        </h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-lock text-emerald-500"></i>
+                                    <span class="text-slate-600">Protokol SSL</span>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Aktif</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-shield text-emerald-500"></i>
+                                    <span class="text-slate-600">Firewall IP</span>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Aktif</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-file-shield text-emerald-500"></i>
+                                    <span class="text-slate-600">Enkripsi Database</span>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">AES-256</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4 mt-4 space-y-4">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase text-slate-400 tracking-wider">Konfigurasi Saat Ini</h4>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Nilai K:</span>
+                                    <span class="font-bold text-slate-700">{{ config.nilai_k }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Threshold Rendah:</span>
+                                    <span class="font-bold text-slate-700">&lt; {{ config.threshold_rendah }}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Threshold Sedang:</span>
+                                    <span class="font-bold text-slate-700">{{ config.threshold_rendah }}-{{ config.threshold_sedang }}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Threshold Tinggi:</span>
+                                    <span class="font-bold text-slate-700">{{ config.threshold_sedang }}-{{ config.threshold_tinggi }}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Threshold S.Tinggi:</span>
+                                    <span class="font-bold text-slate-700">&gt; {{ config.threshold_tinggi }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: LAPORAN & ANALITIK ==================== -->
+                <div v-if="currentTab === 'laporan'" class="space-y-8 animate-[fadeIn_0.3s_ease-out]">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Laporan & Analitik Peringatan Dini</h3>
+                            <p class="text-xs text-slate-400 mt-1">Analisis riwayat kebencanaan genangan banjir dan akurasi model.</p>
+                        </div>
+                        <button @click="triggerExport('Laporan Analitik SiPeBanjir')" class="bg-[#0D47A1] hover:bg-blue-800 text-white font-bold px-5 py-3 rounded-xl transition duration-200 flex items-center gap-2 text-sm shadow-md">
+                            <i class="fa-solid fa-file-export"></i>
+                            <span>Ekspor Laporan (.PDF)</span>
+                        </button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block mb-1">Total Peringatan Terkirim</span>
+                                <span class="text-3xl font-extrabold text-slate-800">278</span>
+                            </div>
+                            <div class="p-3.5 bg-blue-50 text-blue-600 rounded-xl">
+                                <i class="fa-solid fa-paper-plane text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block mb-1">Terselesaikan (Selesai)</span>
+                                <span class="text-3xl font-extrabold text-emerald-600">253</span>
+                            </div>
+                            <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <i class="fa-solid fa-circle-check text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 text-xs block mb-1">Masih Aktif (Siaga)</span>
+                                <span class="text-3xl font-extrabold text-rose-600">25</span>
+                            </div>
+                            <div class="p-3.5 bg-rose-50 text-rose-600 rounded-xl">
+                                <i class="fa-solid fa-clock text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h4 class="font-bold text-slate-800 text-sm mb-4">Tren Peringatan Bulanan</h4>
+                            <div class="h-64">
+                                <canvas id="monthlyTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h4 class="font-bold text-slate-800 text-sm mb-4">Perbandingan Status Peringatan</h4>
+                            <div class="h-64">
+                                <canvas id="monthlyComparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Archives Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+                        <h4 class="font-bold text-slate-800 text-base">Laporan Terbaru Diarsipkan</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                                        <th class="pb-3.5 font-medium">Nama Dokumen</th>
+                                        <th class="pb-3.5 font-medium">Tanggal Dibuat</th>
+                                        <th class="pb-3.5 font-medium">Ukuran File</th>
+                                        <th class="pb-3.5 font-medium">Format</th>
+                                        <th class="pb-3.5 font-medium">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr class="hover:bg-slate-50/50">
+                                        <td class="py-4 font-semibold text-slate-700 flex items-center gap-2">
+                                            <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                                            <span>Laporan Bulanan April 2026</span>
+                                        </td>
+                                        <td class="py-4 text-slate-500">2026-04-30</td>
+                                        <td class="py-4 text-slate-600">2.4 MB</td>
+                                        <td class="py-4"><span class="bg-slate-100 px-2.5 py-1 rounded text-xs font-bold text-slate-600">PDF</span></td>
+                                        <td class="py-4"><button @click="triggerExport('Laporan Bulanan April 2026')" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-download mr-1"></i>Unduh</button></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50/50">
+                                        <td class="py-4 font-semibold text-slate-700 flex items-center gap-2">
+                                            <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                                            <span>Laporan Bulanan Maret 2026</span>
+                                        </td>
+                                        <td class="py-4 text-slate-500">2026-03-31</td>
+                                        <td class="py-4 text-slate-600">2.1 MB</td>
+                                        <td class="py-4"><span class="bg-slate-100 px-2.5 py-1 rounded text-xs font-bold text-slate-600">PDF</span></td>
+                                        <td class="py-4"><button @click="triggerExport('Laporan Bulanan Maret 2026')" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-download mr-1"></i>Unduh</button></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50/50">
+                                        <td class="py-4 font-semibold text-slate-700 flex items-center gap-2">
+                                            <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                                            <span>Laporan Bulanan Februari 2026</span>
+                                        </td>
+                                        <td class="py-4 text-slate-500">2026-02-28</td>
+                                        <td class="py-4 text-slate-600">1.9 MB</td>
+                                        <td class="py-4"><span class="bg-slate-100 px-2.5 py-1 rounded text-xs font-bold text-slate-600">PDF</span></td>
+                                        <td class="py-4"><button @click="triggerExport('Laporan Bulanan Februari 2026')" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-download mr-1"></i>Unduh</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB: PENGGUNA ==================== -->
+                <div v-if="currentTab === 'pengguna'" class="space-y-6 animate-[fadeIn_0.3s_ease-out]">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Manajemen Hak Akses Pengguna</h3>
+                            <p class="text-xs text-slate-400 mt-1">Kelola akun terdaftar yang terintegrasi dengan aplikasi mobile.</p>
+                        </div>
+                        <button @click="openAddPenggunaModal" class="bg-[#0D47A1] hover:bg-blue-800 text-white font-bold px-5 py-3 rounded-xl transition duration-200 flex items-center gap-2 text-sm shadow-md">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Tambah Pengguna Baru</span>
+                        </button>
+                    </div>
+
+                    <!-- Search & Filters -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <div class="w-full md:w-80 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" v-model="userQuery" placeholder="Cari nama atau email..." class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="w-full md:w-48 flex items-center gap-2">
+                            <span class="text-xs font-semibold text-slate-500 whitespace-nowrap">Filter Role:</span>
+                            <select v-model="roleFilter" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none">
+                                <option value="Semua">Semua</option>
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- User Datatable -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                        <th class="p-4.5 font-medium">Pengguna</th>
+                                        <th class="p-4.5 font-medium">Kontak</th>
+                                        <th class="p-4.5 font-medium">Role Hak Akses</th>
+                                        <th class="p-4.5 font-medium">Status</th>
+                                        <th class="p-4.5 font-medium">Terdaftar</th>
+                                        <th class="p-4.5 font-medium text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="user in filteredPengguna" :key="user.id_pengguna" class="hover:bg-slate-50/50">
+                                        <td class="p-4.5">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                                                    {{ (user.nama_lengkap || user.email)[0] }}
+                                                </div>
+                                                <div>
+                                                    <p class="font-bold text-slate-800">{{ user.nama_lengkap || 'Pengguna' }}</p>
+                                                    <p class="text-xs text-slate-400">{{ user.email }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-4.5 text-slate-600 font-medium">
+                                            <i class="fa-solid fa-phone text-xs text-slate-400 mr-1.5"></i>{{ user.no_telepon || '-' }}
+                                        </td>
+                                        <td class="p-4.5">
+                                            <span :class="getRoleBadgeClass(user.role)" class="px-3 py-1 rounded-full text-xs font-bold capitalize">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        <td class="p-4.5">
+                                            <span v-if="user.is_aktif" class="text-emerald-600 font-bold flex items-center gap-1.5">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                <span>Aktif</span>
+                                            </span>
+                                            <span v-else class="text-slate-400 font-bold flex items-center gap-1.5">
+                                                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                                <span>Nonaktif</span>
+                                            </span>
+                                        </td>
+                                        <td class="p-4.5 text-xs text-slate-400">
+                                            {{ formatDate(user.created_at) }}
+                                        </td>
+                                        <td class="p-4.5">
+                                            <div class="flex justify-center gap-3">
+                                                <button @click="openEditPenggunaModal(user)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Edit">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                                <button @click="deletePengguna(user.id_pengguna)" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded" title="Delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="filteredPengguna.length === 0">
+                                        <td colspan="6" class="p-8 text-center text-slate-400">Belum ada data pengguna terdaftar.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <!-- ==================== MODAL: ADD / EDIT TITIK ==================== -->
+        <div v-if="showTitikModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out]">
+            <div class="bg-white rounded-2xl p-7 max-w-lg w-full space-y-5 shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="text-lg font-bold text-slate-800">{{ isEditTitik ? 'Ubah' : 'Tambah' }} Titik Latih Banjir</h3>
+                    <button @click="showTitikModal = false" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Nama Wilayah / Jalan</label>
+                        <input type="text" v-model="titikForm.wilayah" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500" placeholder="Contoh: Jl. Sudirman">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Curah Hujan (mm)</label>
+                            <input type="number" step="0.1" v-model="titikForm.curah_hujan" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Durasi (Jam)</label>
+                            <input type="number" step="0.1" v-model="titikForm.durasi_jam" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Risiko (%)</label>
+                            <input type="number" min="0" max="100" v-model="titikForm.risiko_pct" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Klasifikasi Banjir</label>
+                            <select v-model="titikForm.id_label" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none bg-white">
+                                <option value="1">Rendah (Aman)</option>
+                                <option value="2">Sedang (Waspada)</option>
+                                <option value="3">Tinggi (Siaga)</option>
+                                <option value="4">Sangat Tinggi (Evakuasi)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Latitude</label>
+                            <input type="number" step="0.000001" v-model="titikForm.latitude" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Longitude</label>
+                            <input type="number" step="0.000001" v-model="titikForm.longitude" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Sumber Data</label>
+                        <input type="text" v-model="titikForm.sumber" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500" placeholder="Contoh: BMKG / Sintetik">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-3 text-sm font-bold">
+                    <button @click="showTitikModal = false" class="border px-5 py-2.5 rounded-xl hover:bg-slate-50 transition">Batal</button>
+                    <button @click="submitDataLatih" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL: ADD / EDIT PENGGUNA ==================== -->
+        <div v-if="showPenggunaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out]">
+            <div class="bg-white rounded-2xl p-7 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="text-lg font-bold text-slate-800">{{ isEditUser ? 'Ubah' : 'Tambah' }} Akun Pengguna</h3>
+                    <button @click="showPenggunaModal = false" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Nama Lengkap</label>
+                        <input type="text" v-model="userForm.nama_lengkap" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500" placeholder="Masukkan nama lengkap">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Alamat Email</label>
+                        <input type="email" v-model="userForm.email" :disabled="isEditUser" class="w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400" placeholder="nama@email.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Password <span v-if="isEditUser" class="text-xs font-normal text-slate-400">(Biarkan kosong jika tidak ingin diubah)</span></label>
+                        <input type="password" v-model="userForm.password" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500" placeholder="Masukkan password">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-600 font-semibold mb-1">Nomor Telepon</label>
+                        <input type="text" v-model="userForm.no_telepon" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-blue-500" placeholder="08xxxxxxxxxx">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Hak Akses Role</label>
+                            <select v-model="userForm.role" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none bg-white">
+                                <option value="user">User</option>
+                                <option value="operator">Operator</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Status Sesi</label>
+                            <select v-model="userForm.is_aktif" class="w-full border border-slate-200 p-3 rounded-xl focus:outline-none bg-white">
+                                <option :value="1">Aktif</option>
+                                <option :value="0">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-3 text-sm font-bold">
+                    <button @click="showPenggunaModal = false" class="border px-5 py-2.5 rounded-xl hover:bg-slate-50 transition">Batal</button>
+                    <button @click="submitPengguna" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, nextTick } = Vue;
+
+    createApp({
+        setup() {
+            const isLoggedIn = ref(false);
+            const activeUser = ref({ email: '', nama_lengkap: '', role: '' });
+            
+            // Login states
+            const loginForm = ref({ email: '', password: '' });
+            const loginError = ref('');
+            const loginLoading = ref(false);
+
+            const currentTab = ref('dashboard');
+            
+            // Host URL dinamis sesuai dengan hostname pengakses (mendukung localhost & IP lokal jaringan)
+            const getHostUrl = () => {
+                if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    return `http://${window.location.hostname}:5000/api`;
+                }
+                const localIp = '192.168.43.27';
+                return window.location.hostname ? `http://${window.location.hostname}:5000/api` : `http://${localIp}:5000/api`;
+            };
+            const hostUrl = getHostUrl();
+            
+            // State Storage
+            const stats = ref({ total_titik: 0, total_user: 0, total_analisis: 0 });
+            const riwayatTerbaru = ref([]);
+            const distribusi = ref([]);
+            const titikLatih = ref([]);
+            const pengguna = ref([]);
+            const config = ref({ nilai_k: 5, threshold_rendah: 40, threshold_sedang: 60, threshold_tinggi: 80 });
+
+            // UI Switches
+            const pushNotificationEnabled = ref(true);
+            const autoBackupEnabled = ref(true);
+
+            // Filtering & Search
+            const searchQuery = ref('');
+            const statusFilter = ref('Semua');
+            const userQuery = ref('');
+            const roleFilter = ref('Semua');
+
+            // Form states
+            const showTitikModal = ref(false);
+            const isEditTitik = ref(false);
+            const editingTitikId = ref(null);
+            const titikForm = ref({ wilayah: '', curah_hujan: 0.0, durasi_jam: 0.0, id_label: '1', risiko_pct: 0, latitude: -0.1800, longitude: 100.8200, sumber: '' });
+
+            const showPenggunaModal = ref(false);
+            const isEditUser = ref(false);
+            const editingUserId = ref(null);
+            const userForm = ref({ nama_lengkap: '', email: '', password: '', no_telepon: '', role: 'user', is_aktif: 1 });
+
+            // Charts variables
+            let weeklyChartInstance = null;
+            let distChartInstance = null;
+            let monthlyTrendChartInstance = null;
+            let monthlyCompChartInstance = null;
+
+            // ==================== AUTHENTICATION ====================
+
+            const handleLogin = async () => {
+                loginLoading.value = true;
+                loginError.value = '';
+                
+                try {
+
+
+                    const res = await fetch(`${hostUrl}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(loginForm.value)
+                    });
+                    
+                    const json = await res.json();
+                    
+                    if (res.ok && json.status === 'success') {
+                        const user = json.data;
+                        
+                        if (user.role !== 'admin') {
+                            loginError.value = 'Akses ditolak. Hanya Administrator yang dapat masuk ke panel ini.';
+                            loginLoading.value = false;
+                            return;
+                        }
+
+                        activeUser.value = {
+                            email: user.email,
+                            nama_lengkap: user.nama_lengkap || 'Admin Sistem',
+                            role: user.role
+                        };
+                        
+                        sessionStorage.setItem('admin_email', activeUser.value.email);
+                        sessionStorage.setItem('admin_nama', activeUser.value.nama_lengkap);
+                        sessionStorage.setItem('admin_role', activeUser.value.role);
+                        
+                        isLoggedIn.value = true;
+                        fetchDashboardData();
+                    } else {
+                        loginError.value = json.message || 'Alamat email atau kata sandi salah.';
+                    }
+                } catch (e) {
+                    loginError.value = 'Koneksi gagal terhubung ke server backend.';
+                    console.error("Login error:", e);
+                } finally {
+                    loginLoading.value = false;
+                }
+            };
+
+            const handleLogout = () => {
+                if (confirm('Apakah Anda yakin ingin keluar dari panel admin?')) {
+                    sessionStorage.clear();
+                    isLoggedIn.value = false;
+                    loginForm.value = { email: '', password: '' };
+                }
+            };
+
+            const checkSession = () => {
+                const email = sessionStorage.getItem('admin_email');
+                const nama = sessionStorage.getItem('admin_nama');
+                const role = sessionStorage.getItem('admin_role');
+                
+                if (email && role === 'admin') {
+                    activeUser.value = { email, nama_lengkap: nama || 'Admin Sistem', role };
+                    isLoggedIn.value = true;
+                    fetchDashboardData();
+                }
+            };
+
+            // ==================== ACTIONS ====================
+
+            const changeTab = (tab) => {
+                currentTab.value = tab;
+                if (tab === 'dashboard') {
+                    fetchDashboardData();
+                } else if (tab === 'titik') {
+                    fetchTitikBanjir();
+                } else if (tab === 'pengaturan') {
+                    fetchParameterConfig();
+                } else if (tab === 'laporan') {
+                    fetchLaporanData();
+                } else if (tab === 'pengguna') {
+                    fetchUsersData();
+                }
+            };
+
+            // 1. Fetch dashboard data & initialize charts
+            const fetchDashboardData = async () => {
+                if (!isLoggedIn.value) return;
+                try {
+                    const res = await fetch(`${hostUrl}/admin/dashboard-stats`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        stats.value = json.cards;
+                        riwayatTerbaru.value = json.riwayat_terbaru;
+                        distribusi.value = json.distribusi;
+
+                        nextTick(() => {
+                            initDashboardCharts();
+                        });
+                    }
+                } catch (e) {
+                    console.error("Gagal memuat statistik dashboard:", e);
+                }
+            };
+
+            // 2. Fetch CRUD data latih
+            const fetchTitikBanjir = async () => {
+                try {
+                    const res = await fetch(`${hostUrl}/data-latih`);
+                    const json = await res.json();
+                    if (json.status === 'success') titikLatih.value = json.data;
+                } catch (e) {
+                    console.error("Gagal memuat titik rawan:", e);
+                }
+            };
+
+            // 3. Add / Edit Titik modal triggers
+            const openAddTitikModal = () => {
+                isEditTitik.value = false;
+                editingTitikId.value = null;
+                titikForm.value = { wilayah: '', curah_hujan: 0.0, durasi_jam: 0.0, id_label: '1', risiko_pct: 0, latitude: -0.1800, longitude: 100.8200, sumber: '' };
+                showTitikModal.value = true;
+            };
+
+            const openEditTitikModal = (item) => {
+                isEditTitik.value = true;
+                editingTitikId.value = item.id_data;
+                titikForm.value = { 
+                    wilayah: item.wilayah, 
+                    curah_hujan: item.curah_hujan, 
+                    durasi_jam: item.durasi_jam, 
+                    id_label: String(item.id_label), 
+                    risiko_pct: item.risiko_pct, 
+                    latitude: item.latitude, 
+                    longitude: item.longitude, 
+                    sumber: item.sumber 
+                };
+                showTitikModal.value = true;
+            };
+
+            const submitDataLatih = async () => {
+                try {
+                    const url = isEditTitik.value ? `${hostUrl}/data-latih/${editingTitikId.value}` : `${hostUrl}/data-latih`;
+                    const method = isEditTitik.value ? 'PUT' : 'POST';
+                    
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(titikForm.value)
+                    });
+                    
+                    if (res.ok) {
+                        showTitikModal.value = false;
+                        fetchTitikBanjir();
+                    }
+                } catch (e) {
+                    console.error("Error submitting titik latih:", e);
+                }
+            };
+
+            const deleteDataLatih = async (id) => {
+                if (confirm('Apakah Anda yakin ingin menghapus data latih ini secara permanen?')) {
+                    try {
+                        await fetch(`${hostUrl}/data-latih/${id}`, { method: 'DELETE' });
+                        fetchTitikBanjir();
+                    } catch (e) {
+                        console.error("Error deleting data latih:", e);
+                    }
+                }
+            };
+
+            // 4. Fetch Parameter Config (Settings)
+            const fetchParameterConfig = async () => {
+                try {
+                    const res = await fetch(`${hostUrl}/parameter-knn`);
+                    const json = await res.json();
+                    if (json.status === 'success' && json.data) config.value = json.data;
+                } catch (e) {
+                    console.error("Error loading config parameter:", e);
+                }
+            };
+
+            const saveParameterConfig = async () => {
+                try {
+                    const res = await fetch(`${hostUrl}/parameter-knn`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(config.value)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                } catch (e) {
+                    console.error("Error saving parameter:", e);
+                }
+            };
+
+            // 5. User Management & CRUD
+            const fetchUsersData = async () => {
+                try {
+                    const res = await fetch(`${hostUrl}/pengguna`);
+                    const json = await res.json();
+                    if (json.status === 'success') pengguna.value = json.data;
+                } catch (e) {
+                    console.error("Error fetching users list:", e);
+                }
+            };
+
+            const openAddPenggunaModal = () => {
+                isEditUser.value = false;
+                editingUserId.value = null;
+                userForm.value = { nama_lengkap: '', email: '', password: '', no_telepon: '', role: 'user', is_aktif: 1 };
+                showPenggunaModal.value = true;
+            };
+
+            const openEditPenggunaModal = (user) => {
+                isEditUser.value = true;
+                editingUserId.value = user.id_pengguna;
+                userForm.value = { 
+                    nama_lengkap: user.nama_lengkap || '', 
+                    email: user.email, 
+                    password: '', 
+                    no_telepon: user.no_telepon || '', 
+                    role: user.role, 
+                    is_aktif: user.is_aktif 
+                };
+                showPenggunaModal.value = true;
+            };
+
+            const submitPengguna = async () => {
+                try {
+                    const url = isEditUser.value ? `${hostUrl}/pengguna/${editingUserId.value}` : `${hostUrl}/pengguna`;
+                    const method = isEditUser.value ? 'PUT' : 'POST';
+                    
+                    const payload = { ...userForm.value };
+                    if (isEditUser.value && !payload.password) {
+                        delete payload.password; // jangan kirim password kosong
+                    }
+                    
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        showPenggunaModal.value = false;
+                        fetchUsersData();
+                    } else {
+                        const errJson = await res.json();
+                        alert(errJson.message || 'Gagal menyimpan data pengguna');
+                    }
+                } catch (e) {
+                    console.error("Error submitting user:", e);
+                }
+            };
+
+            const deletePengguna = async (id) => {
+                if (confirm('Apakah Anda yakin ingin menghapus akun pengguna ini secara permanen?')) {
+                    try {
+                        await fetch(`${hostUrl}/pengguna/${id}`, { method: 'DELETE' });
+                        fetchUsersData();
+                    } catch (e) {
+                        console.error("Error deleting user:", e);
+                    }
+                }
+            };
+
+            // 6. Reports and Line Charts initialization
+            const fetchLaporanData = () => {
+                nextTick(() => {
+                    initLaporanCharts();
+                });
+            };
+
+            // ==================== CHARTS CREATION ====================
+
+            const initDashboardCharts = () => {
+                // Destroy old weekly chart if exists
+                if (weeklyChartInstance) weeklyChartInstance.destroy();
+                
+                const weeklyCtx = document.getElementById('weeklyChart');
+                if (weeklyCtx) {
+                    weeklyChartInstance = new Chart(weeklyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                            datasets: [
+                                {
+                                    label: 'Peringatan Dini',
+                                    data: [12, 19, 10, 15, 22, 28, 14],
+                                    backgroundColor: '#F97316',
+                                    borderRadius: 8,
+                                },
+                                {
+                                    label: 'Prediksi Dibuat',
+                                    data: [25, 34, 18, 27, 40, 48, 30],
+                                    backgroundColor: '#0D47A1',
+                                    borderRadius: 8,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 12, font: { family: 'Outfit' } } }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                // Destroy old distribution chart if exists
+                if (distChartInstance) distChartInstance.destroy();
+
+                const distCtx = document.getElementById('riskDistributionChart');
+                if (distCtx) {
+                    // Ambil labels dan data dari API atau default
+                    let dataValues = [35, 28, 22, 15]; // Default Rendah, Sedang, Tinggi, Sangat Tinggi
+                    if (distribusi.value.length > 0) {
+                        const statusCounts = { 'Rendah': 0, 'Sedang': 0, 'Tinggi': 0, 'Sangat Tinggi': 0 };
+                        distribusi.value.forEach(d => {
+                            if (statusCounts.hasOwnProperty(d.nama_status)) {
+                                statusCounts[d.nama_status] = d.jumlah;
+                            }
+                        });
+                        dataValues = [statusCounts['Rendah'], statusCounts['Sedang'], statusCounts['Tinggi'], statusCounts['Sangat Tinggi']];
+                    }
+
+                    distChartInstance = new Chart(distCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Rendah', 'Sedang', 'Tinggi', 'S.Tinggi'],
+                            datasets: [{
+                                data: dataValues,
+                                backgroundColor: ['#22C55E', '#EAB308', '#F97316', '#EF4444'],
+                                borderHoverWidth: 4,
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Outfit', size: 11 } } }
+                            },
+                            cutout: '65%'
+                        }
+                    });
+                }
+            };
+
+            const initLaporanCharts = () => {
+                if (monthlyTrendChartInstance) monthlyTrendChartInstance.destroy();
+                const trendCtx = document.getElementById('monthlyTrendChart');
+                if (trendCtx) {
+                    monthlyTrendChartInstance = new Chart(trendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
+                            datasets: [
+                                {
+                                    label: 'Total Peringatan',
+                                    data: [45, 62, 50, 75, 46],
+                                    borderColor: '#0D47A1',
+                                    backgroundColor: 'rgba(13, 71, 161, 0.05)',
+                                    fill: true,
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Terselesaikan',
+                                    data: [40, 55, 47, 68, 43],
+                                    borderColor: '#22C55E',
+                                    backgroundColor: 'transparent',
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Masih Aktif',
+                                    data: [5, 7, 3, 7, 3],
+                                    borderColor: '#EF4444',
+                                    backgroundColor: 'transparent',
+                                    tension: 0.4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } } },
+                            scales: {
+                                y: { grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                if (monthlyCompChartInstance) monthlyCompChartInstance.destroy();
+                const compCtx = document.getElementById('monthlyComparisonChart');
+                if (compCtx) {
+                    monthlyCompChartInstance = new Chart(compCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
+                            datasets: [
+                                {
+                                    label: 'Terselesaikan',
+                                    data: [40, 55, 47, 68, 43],
+                                    backgroundColor: '#22C55E',
+                                    borderRadius: 6
+                                },
+                                {
+                                    label: 'Masih Aktif',
+                                    data: [5, 7, 3, 7, 3],
+                                    backgroundColor: '#EF4444',
+                                    borderRadius: 6
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } } },
+                            scales: {
+                                y: { grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            };
+
+            // ==================== FILTER COMPUTEDS ====================
+
+            const filteredTitik = computed(() => {
+                let list = titikLatih.value;
+                
+                // Filter status
+                if (statusFilter.value !== 'Semua') {
+                    list = list.filter(t => t.nama_status === statusFilter.value);
+                }
+
+                // Filter search
+                if (searchQuery.value.trim() !== '') {
+                    const q = searchQuery.value.toLowerCase();
+                    list = list.filter(t => t.wilayah.toLowerCase().includes(q));
+                }
+
+                return list;
+            });
+
+            const filteredPengguna = computed(() => {
+                let list = pengguna.value;
+
+                // Filter role
+                if (roleFilter.value !== 'Semua') {
+                    list = list.filter(u => u.role === roleFilter.value);
+                }
+
+                // Filter search
+                if (userQuery.value.trim() !== '') {
+                    const q = userQuery.value.toLowerCase();
+                    list = list.filter(u => 
+                        (u.nama_lengkap && u.nama_lengkap.toLowerCase().includes(q)) || 
+                        u.email.toLowerCase().includes(q)
+                    );
+                }
+
+                return list;
+            });
+
+            // ==================== CSS CLASS HELPERS ====================
+
+            const getCardBorderClass = (status) => {
+                switch(status) {
+                    case 'Sangat Tinggi': return 'border-l-rose-500 hover:border-y-rose-200 hover:border-r-rose-200';
+                    case 'Tinggi': return 'border-l-orange-500 hover:border-y-orange-200 hover:border-r-orange-200';
+                    case 'Sedang': return 'border-l-amber-500 hover:border-y-amber-200 hover:border-r-amber-200';
+                    case 'Rendah':
+                    default: return 'border-l-emerald-500 hover:border-y-emerald-200 hover:border-r-emerald-200';
+                }
+            };
+
+            const getTextColorClass = (status) => {
+                switch(status) {
+                    case 'Sangat Tinggi': return 'text-rose-500';
+                    case 'Tinggi': return 'text-orange-500';
+                    case 'Sedang': return 'text-amber-500';
+                    case 'Rendah':
+                    default: return 'text-emerald-500';
+                }
+            };
+
+            const getRoleBadgeClass = (role) => {
+                switch(role) {
+                    case 'admin': return 'bg-purple-100 text-purple-800 border border-purple-200';
+                    case 'operator': return 'bg-blue-100 text-blue-800 border border-blue-200';
+                    case 'user':
+                    default: return 'bg-slate-100 text-slate-700 border border-slate-200';
+                }
+            };
+
+            // Formatting helper functions
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '-';
+                try {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+                } catch(e) {
+                    return dateStr;
+                }
+            };
+
+            // Toggles
+            const triggerBackup = () => alert('Proses pencadangan database berhasil diinisiasi! Berkas cadangan dikirim ke server cloud.');
+            const triggerExport = (reportName = 'Laporan Analitik SiPeBanjir') => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    // Colors
+                    const primaryColor = [13, 71, 161]; // #0D47A1
+                    
+                    // Font Styles
+                    doc.setFont("helvetica", "bold");
+                    
+                    // Header Banner
+                    doc.setFillColor(...primaryColor);
+                    doc.rect(0, 0, 210, 40, "F");
+                    
+                    // Header Text
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(22);
+                    doc.text("SiPeBanjir Dashboard Laporan", 15, 25);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(200, 220, 255);
+                    doc.text("Sistem Peringatan Dini Potensi Titik Banjir Genangan", 15, 33);
+                    
+                    // Report Metadata
+                    doc.setTextColor(50, 50, 50);
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Detail Dokumen:", 15, 55);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Nama Laporan: ${reportName}`, 15, 63);
+                    doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 15, 70);
+                    doc.text(`Dicetak Oleh: ${activeUser.value.nama_lengkap || 'Admin Sistem'} (${activeUser.value.email})`, 15, 77);
+                    
+                    // Horizontal Divider
+                    doc.setDrawColor(220, 220, 220);
+                    doc.setLineWidth(0.5);
+                    doc.line(15, 85, 195, 85);
+                    
+                    // Content Title
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.setTextColor(...primaryColor);
+                    doc.text("Ringkasan Statistik Peringatan Dini", 15, 98);
+                    
+                    // Stats Table/Boxes
+                    doc.setFillColor(248, 250, 252); // light slate background
+                    doc.rect(15, 105, 55, 30, "F");
+                    doc.rect(77, 105, 55, 30, "F");
+                    doc.rect(139, 105, 55, 30, "F");
+                    
+                    doc.setDrawColor(226, 232, 240);
+                    doc.rect(15, 105, 55, 30, "S");
+                    doc.rect(77, 105, 55, 30, "S");
+                    doc.rect(139, 105, 55, 30, "S");
+                    
+                    // Stats Labels & Values
+                    doc.setFontSize(9);
+                    doc.setTextColor(100, 116, 139);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Total Peringatan", 20, 113);
+                    doc.text("Terselesaikan", 82, 113);
+                    doc.text("Masih Aktif (Siaga)", 144, 113);
+                    
+                    doc.setFontSize(18);
+                    doc.setFont("helvetica", "bold");
+                    doc.setTextColor(30, 41, 59);
+                    doc.text("278", 20, 126);
+                    doc.setTextColor(34, 197, 94); // Green
+                    doc.text("253", 82, 126);
+                    doc.setTextColor(239, 68, 68); // Red
+                    doc.text("25", 144, 126);
+                    
+                    // Section 2: Tren Bulanan
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.setTextColor(...primaryColor);
+                    doc.text("Statistik Tren Bulanan (Jan - Mei)", 15, 150);
+                    
+                    // Table Header
+                    doc.setFillColor(241, 245, 249);
+                    doc.rect(15, 157, 180, 8, "F");
+                    doc.setFontSize(9);
+                    doc.setTextColor(71, 85, 105);
+                    doc.text("Bulan", 20, 162);
+                    doc.text("Total Peringatan", 60, 162);
+                    doc.text("Terselesaikan", 110, 162);
+                    doc.text("Masih Aktif", 160, 162);
+                    
+                    // Table Rows
+                    const rows = [
+                        ["Januari", "45", "40", "5"],
+                        ["Februari", "62", "55", "7"],
+                        ["Maret", "50", "47", "3"],
+                        ["April", "75", "68", "7"],
+                        ["Mei", "46", "43", "3"]
+                    ];
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(30, 41, 59);
+                    let currentY = 172;
+                    rows.forEach((row, i) => {
+                        // Zebra striping
+                        if (i % 2 === 1) {
+                            doc.setFillColor(248, 250, 252);
+                            doc.rect(15, currentY - 5, 180, 7, "F");
+                        }
+                        doc.text(row[0], 20, currentY);
+                        doc.text(row[1], 60, currentY);
+                        doc.text(row[2], 110, currentY);
+                        doc.text(row[3], 160, currentY);
+                        
+                        // Line separator
+                        doc.setDrawColor(241, 245, 249);
+                        doc.line(15, currentY + 2, 195, currentY + 2);
+                        currentY += 8;
+                    });
+                    
+                    // Section 3: Model parameters info
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(12);
+                    doc.setTextColor(...primaryColor);
+                    doc.text("Parameter Algoritma Pemetaan (K-NN):", 15, 225);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    doc.setTextColor(71, 85, 105);
+                    doc.text(`- Nilai K Tetangga Terdekat: ${config.value.nilai_k || 5}`, 15, 233);
+                    doc.text(`- Threshold Risiko Rendah: < ${config.value.threshold_rendah || 40}%`, 15, 239);
+                    doc.text(`- Threshold Risiko Sedang: ${config.value.threshold_rendah || 40}% - ${config.value.threshold_sedang || 60}%`, 15, 245);
+                    doc.text(`- Threshold Risiko Tinggi: ${config.value.threshold_sedang || 60}% - ${config.value.threshold_tinggi || 80}%`, 15, 251);
+                    
+                    // Footer line
+                    doc.setDrawColor(220, 220, 220);
+                    doc.line(15, 270, 195, 270);
+                    
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("Laporan ini sah dan dibuat secara otomatis oleh sistem SiPeBanjir.", 15, 276);
+                    doc.text("Hak Cipta © 2026 SiPeBanjir. All Rights Reserved.", 15, 281);
+                    
+                    // Save document
+                    doc.save(`${reportName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+                } catch (error) {
+                    console.error("PDF generation failed:", error);
+                    alert("Gagal mengekspor laporan: " + error.message);
+                }
+            };
+
+            onMounted(() => {
+                checkSession();
+            });
+
+            return {
+                isLoggedIn, activeUser, loginForm, loginError, loginLoading, handleLogin, handleLogout,
+                currentTab, changeTab, stats, riwayatTerbaru, distribusi, titikLatih, config, pengguna,
+                pushNotificationEnabled, autoBackupEnabled,
+                searchQuery, statusFilter, filteredTitik,
+                userQuery, roleFilter, filteredPengguna,
+                showTitikModal, isEditTitik, titikForm, openAddTitikModal, openEditTitikModal, submitDataLatih, deleteDataLatih,
+                showPenggunaModal, isEditUser, userForm, openAddPenggunaModal, openEditPenggunaModal, submitPengguna, deletePengguna,
+                saveParameterConfig, triggerBackup, triggerExport,
+                getCardBorderClass, getTextColorClass, getRoleBadgeClass, formatDate
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

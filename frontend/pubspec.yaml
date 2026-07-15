@@ -1,0 +1,63 @@
+name: banjirwatch
+description: Sistem Peringatan Dini Potensi Titik Banjir Genangan berbasis K-NN
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP client untuk komunikasi ke Flask API
+  http: ^1.2.0
+
+  # Local database (SQLite) untuk cache dan riwayat offline
+  sqflite: ^2.3.2
+  path: ^1.9.0
+
+  # Shared preferences untuk menyimpan token & pengaturan
+  shared_preferences: ^2.2.3
+
+  # Provider untuk state management
+  provider: ^6.1.2
+
+  # Google Fonts
+  google_fonts: ^6.2.1
+
+  # Icons tambahan
+  flutter_svg: ^2.0.10+1
+
+  # Intl untuk format tanggal/waktu Bahasa Indonesia
+  intl: ^0.19.0
+
+  # Geolocator untuk GPS (opsional)
+  geolocator: ^12.0.0
+
+  # Permission handler
+  permission_handler: ^11.3.1
+
+  # Flutter local notifications
+  flutter_local_notifications: ^17.2.2
+
+  # Connectivity check
+  connectivity_plus: ^6.0.3
+
+  # Fl Chart untuk grafik curah hujan
+  fl_chart: ^0.66.0
+
+  # Flutter Map dan Latlong untuk pemetaan titik rawan
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
